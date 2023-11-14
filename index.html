@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gas Natural Bot</title>
+  <style type="text/css">
+    /* General Styles */
+body {
+ font-family: sans-serif;
+ background-color: #f4f4f4;
+ color: #333;
+ margin: 0;
+ padding: 0;
+}
+
+h1, h2, h3, h4 {
+ color: #555;
+}
+
+/* Container Styles */
+#bot {
+ max-width: 500px;
+ margin: 20px auto;
+ padding: 20px;
+ background-color: #fff;
+ box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+ #bot {
+    width: 100%;
+    padding: 10px;
+ }
+}
+  </style>
+</head>
+<body>
+  <h1>Gas Natural Bot</h1>
+  <div id="bot"></div>
+  <script>
+    function Bot() {
+  this.precioActual = null;
+  this.precioAnterior = null;
+  this.diferencia = null;
+  this.recomendacion = null;
+
+  this.actualizarPrecio = function() {
+    // Obtiene el precio actual del gas natural
+    this.precioActual = fetch("https://api.iextrading.com/1.0/stock/NG/quote").then(response => response.json()).then(data => data.latestPrice);
+
+    // Calcula la diferencia entre el precio actual y el anterior
+    if (this.precioAnterior !== null) {
+      this.diferencia = this.precioActual - this.precioAnterior;
+    } else {
+      this.diferencia = 0;
+    }
+
+    // Actualiza la recomendación de compra o venta
+    if (this.diferencia > 0) {
+      this.recomendacion = "Comprar";
+    } else if (this.diferencia < 0) {
+      this.recomendacion = "Vender";
+    } else {
+      this.recomendacion = "Mantener";
+    }
+  };
+
+  this.inicializar = function() {
+    // Obtiene el precio anterior del gas natural
+    this.precioAnterior = fetch("https://api.iextrading.com/1.0/stock/NG/quote").then(response => response.json()).then(data => data.latestPrice);
+  };
+
+  this.renderizar = function() {
+    // Actualiza el precio actual
+    this.actualizarPrecio();
+
+    // Renderiza el precio actual
+    document.getElementById("bot").innerHTML = `
+      <h2>Precio actual: ${this.precioActual}</h2>
+      <h3>Diferencia: ${this.diferencia}</h3>
+      <h4>Recomendación: ${this.recomendacion}</h4>
+    `;
+  };
+}
+
+// Crea un nuevo bot
+var bot = new Bot();
+
+// Inicializa el bot
+bot.inicializar();
+
+// Ejecuta el bot cada 30 minutos
+setInterval(function() {
+  bot.renderizar();
+}, 5000);
+
+  </script>
+</body>
+</html>
